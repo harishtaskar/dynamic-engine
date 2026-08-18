@@ -8,6 +8,10 @@ import {
 
 import { ThemeToggle } from "../theme/ThemeToggle";
 
+import {
+  useDashboardStore,
+} from "../../stores/dashboard.store";
+
 import { useUiStore } from "../../stores/ui.store";
 
 const pillClass =
@@ -17,6 +21,10 @@ const iconButtonClass =
   "flex size-8 items-center justify-center rounded-full bg-elevated text-fg transition hover:brightness-125";
 
 export function TopBar() {
+  const name = useDashboardStore(
+    (state) => state.dashboard?.name,
+  );
+
   const collapsed = useUiStore(
     (state) => state.historyCollapsed,
   );
@@ -37,7 +45,7 @@ export function TopBar() {
         </span>
 
         <span className="truncate font-semibold text-fg">
-          New investigation
+          {name ?? "New investigation"}
         </span>
       </div>
 
