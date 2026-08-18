@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ChevronRight,
   LayoutDashboard,
+  Loader2,
   MessageSquare,
   PanelLeftClose,
   Plus,
@@ -67,7 +68,18 @@ const navigationGroups = [
   ],
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  onSelectInvestigation: (
+    prompt: string,
+  ) => void | Promise<void>;
+
+  isGenerating: boolean;
+}
+
+export function Sidebar({
+  onSelectInvestigation,
+  isGenerating,
+}: SidebarProps) {
   const activeInvestigation = useUiStore(
     (state) => state.activeInvestigation,
   );
@@ -75,6 +87,15 @@ export function Sidebar() {
   const setActiveInvestigation = useUiStore(
     (state) => state.setActiveInvestigation,
   );
+
+  const openInvestigation = (
+    label: string,
+    prompt: string,
+  ) => {
+    setActiveInvestigation(label);
+
+    void onSelectInvestigation(prompt);
+  };
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col rounded-2xl bg-surface md:flex">
@@ -145,19 +166,30 @@ export function Sidebar() {
                 aria-current={
                   active ? "page" : undefined
                 }
+                disabled={isGenerating}
                 onClick={() =>
-                  setActiveInvestigation(item.label)
+                  openInvestigation(
+                    item.label,
+                    item.prompt,
+                  )
                 }
                 className={clsx(
-                  "flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-[13px] transition",
+                  "flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-[13px] transition disabled:cursor-not-allowed",
                   active
                     ? "bg-elevated font-semibold text-fg"
-                    : "text-muted hover:bg-elevated hover:text-fg",
+                    : "text-muted hover:bg-elevated hover:text-fg disabled:hover:bg-transparent disabled:hover:text-muted",
                 )}
               >
                 <span className="min-w-0 flex-1 truncate">
                   {item.label}
                 </span>
+
+                {active && isGenerating && (
+                  <Loader2
+                    aria-hidden="true"
+                    className="size-3 shrink-0 animate-spin"
+                  />
+                )}
               </button>
             );
           })}

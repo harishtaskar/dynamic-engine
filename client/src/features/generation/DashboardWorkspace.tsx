@@ -12,6 +12,11 @@ import { InvestigationHeader } from "../../components/investigation/Investigatio
 
 import { WidgetRenderer } from "../../registry/WidgetRenderer";
 import { WidgetSkeleton } from "../../components/skeletons/WidgetSkeleton";
+import { PromptBar } from "./PromptBar";
+
+import {
+  useGenerateDashboard,
+} from "../../hooks/use-generate-dashboard";
 
 import {
   useDashboardStore,
@@ -78,6 +83,12 @@ function readingOrder(
 const DEMO_PROMPT = "High risk accounts review";
 
 export function DashboardWorkspace() {
+  const {
+    isGenerating,
+    error,
+    generate,
+  } = useGenerateDashboard();
+
   const dashboard =
     useDashboardStore(
       (state) => state.dashboard,
@@ -97,9 +108,6 @@ export function DashboardWorkspace() {
   const [bootstrapping, setBootstrapping] =
     useState(true);
 
-  const [error, setError] =
-    useState<string | null>(null);
-
   useEffect(() => {
     if (didRequest.current) {
       return;
@@ -112,40 +120,32 @@ export function DashboardWorkspace() {
         const existing =
           await getDashboards();
 
-        if (existing.length === 0) {
-          setError(
-            "No saved dashboards yet. Seed the backend to see one here.",
-          );
+        if (existing.length > 0) {
+          const preferred =
+            existing.find(
+              (item) =>
+                item.prompt.toLowerCase() ===
+                DEMO_PROMPT.toLowerCase(),
+            ) ?? existing[0];
 
-          setActiveInvestigation(null);
+          const latest =
+            await getDashboardById(
+              preferred.id,
+            );
 
-          return;
-        }
+          setDashboard(latest);
 
-        const preferred =
-          existing.find(
-            (item) =>
-              item.prompt.toLowerCase() ===
-              DEMO_PROMPT.toLowerCase(),
-          ) ?? existing[0];
-
-        const latest =
-          await getDashboardById(
-            preferred.id,
-          );
-
-        setDashboard(latest);
-
-        if (
-          preferred.prompt.toLowerCase() !==
-          DEMO_PROMPT.toLowerCase()
-        ) {
-          setActiveInvestigation(null);
+          if (
+            preferred.prompt.toLowerCase() !==
+            DEMO_PROMPT.toLowerCase()
+          ) {
+            setActiveInvestigation(null);
+          }
+        } else {
+          await generate(DEMO_PROMPT);
         }
       } catch {
-        setError(
-          "Could not reach the dashboard service.",
-        );
+        await generate(DEMO_PROMPT);
       } finally {
         setBootstrapping(false);
       }
@@ -153,6 +153,7 @@ export function DashboardWorkspace() {
 
     void bootstrap();
   }, [
+    generate,
     setDashboard,
     setActiveInvestigation,
   ]);
@@ -165,7 +166,18 @@ export function DashboardWorkspace() {
 
   const content = readingOrder(widgets);
 
-  const skeletonCount = bootstrapping
+  const generateFromPrompt = async (
+    prompt: string,
+  ) => {
+    setActiveInvestigation(null);
+
+    await generate(prompt);
+  };
+
+  const loading =
+    isGenerating || bootstrapping;
+
+  const skeletonCount = loading
     ? Math.max(
         0,
         (dashboard?.contentCount ?? 8) -
@@ -175,8 +187,19 @@ export function DashboardWorkspace() {
 
   return (
     <AppShell
-      sidebar={<Sidebar />}
+      sidebar={
+        <Sidebar
+          onSelectInvestigation={generate}
+          isGenerating={loading}
+        />
+      }
       history={<HistoryPanel />}
+      prompt={
+        <PromptBar
+          onSubmit={generateFromPrompt}
+          isGenerating={isGenerating}
+        />
+      }
     >
       <div className="w-full px-8 pt-4 pb-40">
         <InvestigationHeader />
