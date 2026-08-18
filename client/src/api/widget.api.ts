@@ -1,3 +1,5 @@
+import axios from "axios";
+
 import { apiClient } from "./client.api";
 
 export type WidgetAction =
@@ -31,4 +33,25 @@ export async function executeWidgetAction(
     >("/widget-action", payload);
 
   return response.data.data;
+}
+
+export function extractFieldErrors(
+  error: unknown,
+): Record<string, string> | null {
+  if (!axios.isAxiosError(error)) {
+    return null;
+  }
+
+  const fieldErrors = (
+    error.response?.data as
+      | {
+          fieldErrors?: Record<
+            string,
+            string
+          >;
+        }
+      | undefined
+  )?.fieldErrors;
+
+  return fieldErrors ?? null;
 }

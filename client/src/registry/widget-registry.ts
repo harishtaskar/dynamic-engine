@@ -48,6 +48,14 @@ const CommandPanel = lazy(async () => ({
   ).CommandPanel,
 }));
 
+const DynamicForm = lazy(async () => ({
+  default: (
+    await import(
+      "../components/widgets/DynamicForm"
+    )
+  ).DynamicForm,
+}));
+
 function asWidgetComponent(
   Component: unknown,
 ): WidgetComponent {
@@ -68,4 +76,7 @@ export const widgetRegistry: Partial<
 
   COMMAND_PANEL:
     asWidgetComponent(CommandPanel),
+
+  DYNAMIC_FORM:
+    asWidgetComponent(DynamicForm),
 };
