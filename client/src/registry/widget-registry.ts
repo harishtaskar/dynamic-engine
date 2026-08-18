@@ -32,6 +32,14 @@ const DataTable = lazy(async () => ({
   ).DataTable,
 }));
 
+const BarChart = lazy(async () => ({
+  default: (
+    await import(
+      "../components/widgets/BarChart"
+    )
+  ).BarChart,
+}));
+
 function asWidgetComponent(
   Component: unknown,
 ): WidgetComponent {
@@ -46,4 +54,7 @@ export const widgetRegistry: Partial<
 
   DATA_TABLE:
     asWidgetComponent(DataTable),
+
+  BAR_CHART:
+    asWidgetComponent(BarChart),
 };
