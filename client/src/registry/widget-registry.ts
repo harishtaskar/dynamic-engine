@@ -24,6 +24,14 @@ const MetricCard = lazy(async () => ({
   ).MetricCard,
 }));
 
+const DataTable = lazy(async () => ({
+  default: (
+    await import(
+      "../components/widgets/DataTable"
+    )
+  ).DataTable,
+}));
+
 function asWidgetComponent(
   Component: unknown,
 ): WidgetComponent {
@@ -35,4 +43,7 @@ export const widgetRegistry: Partial<
 > = {
   METRIC_CARD:
     asWidgetComponent(MetricCard),
+
+  DATA_TABLE:
+    asWidgetComponent(DataTable),
 };
