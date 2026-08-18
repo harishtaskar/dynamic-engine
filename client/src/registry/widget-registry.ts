@@ -40,6 +40,14 @@ const BarChart = lazy(async () => ({
   ).BarChart,
 }));
 
+const CommandPanel = lazy(async () => ({
+  default: (
+    await import(
+      "../components/widgets/CommandPanel"
+    )
+  ).CommandPanel,
+}));
+
 function asWidgetComponent(
   Component: unknown,
 ): WidgetComponent {
@@ -57,4 +65,7 @@ export const widgetRegistry: Partial<
 
   BAR_CHART:
     asWidgetComponent(BarChart),
+
+  COMMAND_PANEL:
+    asWidgetComponent(CommandPanel),
 };
